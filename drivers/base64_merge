@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+
+set -o errexit -o pipefail -o nounset -o errtrace
+
+# docs: https://git-scm.com/docs/gitattributes#_defining_a_custom_merge_driver
+
+# error codes have different meanings, from the docs:
+#
+#   exit with zero status if it managed to merge them cleanly, or non-zero if
+#   there were conflicts. When the driver crashes (e.g. killed by SEGV), it is
+#   expected to exit with non-zero status that are higher than 128, and in such
+#   a case, the merge results in a failure (which is different from producing a
+#   conflict).
+get_exit_code() {
+    local exit_code="$1"
+    if [ "$exit_code" -ne 0 ]
+    then
+        echo 129
+    else
+        echo 0
+    fi
+}
+trap 'code="$?"; exit $(get_exit_code "$code")' EXIT
+
+# common ancestor’s version (%O)
+common_ancestor_version="$1"
+# current version (%A)
+current_version="$2"
+# the other branches' version (%B)
+other_version="$3"
+# %L will be replaced with the conflict marker size
+conflict_marker_size="$4"
+# The merge driver can learn the pathname in which the merged result will be
+# stored via placeholder %P
+dest_path="$5"
+# The conflict labels to be used for the common ancestor, local head and other
+# head can be passed by using %S, %X and '%Y` respectively.
+# NOTE: available since git 2.44.0
+common_ancestor_label="$6"
+local_head_label="$7"
+other_head_label="$8"
+
+echo "merging into: $dest_path" >&2
+
+# temp files to write the decoded content to
+SUFFIX="-git-base64"
+common_ancestor_tmp="$(mktemp --suffix "$SUFFIX")"
+current_tmp="$(mktemp --suffix "$SUFFIX")"
+other_tmp="$(mktemp --suffix "$SUFFIX")"
+
+trap 'rm "$common_ancestor_tmp" "$current_tmp" "$other_tmp"' EXIT
+
+# write the decoded content, re-using the other scripts for convenience
+./drivers/base64_smudge < "$common_ancestor_version" > "$common_ancestor_tmp"
+./drivers/base64_smudge < "$current_version" > "$current_tmp"
+./drivers/base64_smudge < "$other_version" > "$other_tmp"
+
+# now the files are all decoded, just let `git-merge-file` do all the hard work
+# for us, including exiting with the correct value
+# docs: https://git-scm.com/docs/git-merge-file
+# Notes:
+#   - pass the marker size down
+#   - pass the labels down (-L arguments)
+# 
+# from the docs:
+#
+#   The merge driver is expected to leave the result of the merge in the file
+#   named with %A by overwriting it
+
+exec git merge-file \
+    --marker-size="$conflict_marker_size" \
+    --stdout \
+    -L "$local_head_label" \
+    -L "$common_ancestor_label" \
+    -L "$other_head_label" \
+    "$current_tmp" \
+    "$common_ancestor_tmp" \
+    "$other_tmp" \
+    | base64 > "$current_version"

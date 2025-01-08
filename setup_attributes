@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -o errexit -o pipefail -o nounset
+
+# filter
+git config set --local filter.base64.smudge './drivers/base64_smudge %f'
+git config set --local filter.base64.clean './drivers/base64_clean %f'
+git config set --local filter.base64.required true
+
+# diff
+git config set --local diff.base64.textconv ./drivers/base64_textconv
+
+# merge
+git config set --local merge.base64.driver './drivers/base64_merge %O %A %B %L %P %S %X %Y'

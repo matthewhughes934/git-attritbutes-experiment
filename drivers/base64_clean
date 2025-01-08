@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -o errexit -o pipefail -o nounset
+
+# docs: https://git-scm.com/docs/gitattributes#_filter
+#
+#   A filter driver consists of a clean command and a smudge command, either of
+#   which can be left unspecified. Upon checkout, when the smudge command is
+#   specified, the command is fed the blob object from its standard input, and its
+#   standard output is used to update the worktree file. Similarly, the clean
+#   command is used to convert the contents of worktree file upon checkin
+
+# in our case, we encode the plain contents in the worktree back to base64
+
+# path name is just for debugging, and set via configuration using the '%f'
+# sequence (see docs). Configure as: clean = ./base64_clean %f
+if [ "$#" = 1 ]
+then
+    path="$1"
+    echo "cleaning: $path" >&2
+fi
+
+content="$(cat -)"
+if ! base64 <<< "$content"
+then
+    echo "failed encoding content" >&2
+    echo "content: $content" >&2
+    exit 1
+fi

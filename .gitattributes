@@ -1,0 +1,1 @@
+*.b64   filter=base64 diff=base64 merge=base64

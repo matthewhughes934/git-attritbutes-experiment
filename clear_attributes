@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -o errexit -o pipefail -o nounset
+
+# filter
+git config remove-section --local filter.base64
+
+# diff
+git config remove-section --local diff.base64
+
+# merge
+git config remove-section --local merge.base64

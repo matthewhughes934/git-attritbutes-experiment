@@ -1,0 +1,19 @@
+From af182e8516232ba577c1fd2206336ceee179af21 Mon Sep 17 00:00:00 2001
+From: Matthew Hughes <matthewhughes934@gmail.com>
+Date: Wed, 8 Jan 2025 21:50:04 +0000
+Subject: [PATCH 2/2] Some other change
+
+---
+ file.b64 | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/file.b64 b/file.b64
+index 48c91de..8907584 100644
+--- a/file.b64
++++ b/file.b64
+@@ -1 +1 @@
+-aGVyZSdzIHNvbWUgY29udGVudAoKCndvdywgaW50ZXJlc3RpbmcK
++aGVyZSdzIHNvbWUgY29udGVudAoKCndvdywgX3ZlcnlfIGludGVyZXN0aW5nCg==
+-- 
+2.47.1
+

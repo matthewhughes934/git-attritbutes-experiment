@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -o errexit -o pipefail -o nounset
+
+# docs: https://git-scm.com/docs/gitattributes#_performing_text_diffs_of_binary_files
+#   The textconv config option is used to define a program for performing such a
+#   conversion. The program should take a single argument, the name of a file to
+#   convert, and produce the resulting text on stdout.
+
+# in our case, the file in the worktree is already decoded, so we can just read
+# that. Otherwise, git would compare the checked-in file, which is base64
+# encoded
+
+path="$1"
+echo "diffing: $path" >&2
+
+cat "$path"

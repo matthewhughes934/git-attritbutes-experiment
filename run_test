@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -o errexit -o pipefail -o nounset
+
+create_branch_with_patch() {
+    local branch_name="$1"
+    local patch_path="$2"
+    echo "applying patch '$patch_path' on branch '$branch_name'" 
+
+    git switch --quiet -C "$branch_name" main
+    git am --quiet -- "$patch_path"
+}
+
+create_branch_with_patch first-branch ./patches/0001-Some-change.patch
+create_branch_with_patch second-branch ./patches/0002-Some-other-change.patch
+
+echo 'rebasing second-branch on first-branch'
+git rebase first-branch
